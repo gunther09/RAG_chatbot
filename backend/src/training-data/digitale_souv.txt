@@ -1,0 +1,805 @@
+Chatverlauf
+
+
+ChatGPT
+ChatGPT
+GPT
+Workshopleitfaden systemische Beraterin
+GPT
+One Voice Texter
+GPT
+Medical Writer Assistent
+GPT
+Single Minded Propositioner
+
+3 mehr
+
+GPTs erkunden
+Heute
+Creating Chatbots with RAG
+
+Gestern
+Install Docker on VMware.
+Feedback on Conversation
+Markierung des Strafraumhalbkreises
+Auto-GPT Fortschrittliche Automatisierung
+-- Python Discord Bot
+Endkundenpreis typischer Medikamente Deutschland
+Arbeitsplatte aus Buche pflegen
+Good Headset Options
+Balkonkraftwerk: Deutschland, Einfamilienhaus
+Vorherige 7 Tage
+Datenbankprüfung für WordPress
+-- Bestellungen OpenAI
+--- Kontakte Flask OpenAI Kontakte Projekt
+Ice Breaker Game
+Objects Resembling Donuts
+My Chat with IPA
+Zulassungsverfahren neuer Therapien Deutschland
+Rollup für Photovoltaik-Wettbewerb
+Group Think Video Summary
+Software Partnership Negotiation
+KI in Kampagnenproduktion: Varianten
+Neurons Inc. Alternatives: Software
+Understanding Groupthink
+Chronische Handentzündung: Behandlung und Prävention
+Building Connections Through Barcamp
+Patient BarCamp Berlin
+Download SharePoint Attachments TypeScript
+Akeega Zulassung in Deutschland
+Zusatznutzen von Ibrutinib
+Zusatznutzen von Ibrutinib bewerten
+Zusatznutzen Ibrutinib bewerten
+Zusatznutzen von Ibrutinib
+Create video summary
+Videozusammenfassung und Infografiken
+Generate Infographic Based on Video
+Social Media Carousel Creation
+Rationale Zahlen Zusammenfassung
+Show SQL database structure
+Drucker Nachfolgemodell empfehlen
+Vorherige 30 Tage
+Barcamp zur Trainerstrahlkraft
+Tiere Fragen Antworten
+Improve Ad with Heatmap
+Analyse von gescannten PDFs
+Radiomolecular Medicine Advances: 3BP3940
+Druckdaten für 146 Seiten
+Microsoft Forms Umfrage erstellen
+Company Spirit Link Song
+Kurze Varianten der Anzeige
+Web Applikation mit OpenAI-API
+Patienten-Barcamp: Empathische Ansprache
+Nesselsucht BarCamp: Gemeinsam Stark
+Brolucizumab Handout Design
+PSMA-PET/CT-Einschränkungen und Gründe
+MaxWert über Zeilen berechnen.
+Kunveno Platform Overview
+Erkennen Sie Ihre Optionen.
+Team-Arbeitsbereich hinzufügen
+Mit einem Teamtarif zusammenarbeiten
+ChatGPT 4o
+
+
+User
+Lies diesen Artikel genau durch und erklär mir die Inhalte: 
+
+Eigene Chatbots mit Retrieval Augmented Generation erstellen
+Will man einen KI-Chatbot mit der internen Dokumentensammlung nutzen, ist RAG Stand der Technik. Ein einfacher Prototyp lässt sich mit ein wenig Code erstellen.
+
+
+Das Feintunen von Modellen mit der eigenen Dokumentensammlung erfordert eine ausreichende Menge Daten und dazu noch gehörig Rechenzeit.
+
+Als Alternative bietet sich die Kombination aus Retrieval Augmented Generation und einer Vektordatenbank an. Damit spart man sich nicht nur das zusätzliche Training, sondern kann damit außerdem die Antworten der KI verbessern und Halluzinationen vermeiden. Das Ganze funktioniert bereits mit einzelnen oder wenigen Dokumenten.
+
+Ronny Frankenstein
+
+Ronny Frankenstein ist bei der HiSolutions AG Auditteamleiter für die Zertifizierung der ISO 27001 auf Basis des BSI IT-Grundschutzes sowie Mitautor der BSI-Standards und des IT-Grundschutz-Kompendiums.
+
+Dieser Artikel beschreibt die praktische Umsetzung eines Prototyps mit Python samt einer Web-App in React. Der Prototyp beantwortet Fragen zu internen Dokumenten, den passenden Kontext dafür liefert das Sprachmodell GPT-4 in Kombination mit Retrieval Augmented Generation (RAG).
+
+Kai Konitzer
+
+Kai Konitzer ist Programmierer und studiert Medieninformatik an der Berliner Hochschule für Technik.
+
+iX-tract
+Retrieval Augmented Generation (RAG) stellt großen Sprachmodellen zusätzliche Inhalte zur Verfügung, die beim Generieren von Text als Kontext einfließen.
+Neben einer Dokumentensammlung benötigt man für den Einsatz von RAG noch eine Vektordatenbank, in der die Dokumente aufbereitet liegen.
+Im produktiven Einsatz kommt man um das Optimieren von RAG-Parametern wie Segmentgröße oder Overlapping durch ausführliche Tests nicht herum.
+Softwarearchitektur und Komponentenauswahl
+Den Aufbau der Beispiel-App verdeutlicht die folgende Abbildung. Die Anwendung nutzt ein Web-Frontend (A) mit einem Eingabefeld für die Fragen des Benutzers und zeigt einen Abschnitt mit den bisherigen Nachrichten von Nutzer und Chatbot. Ein Webserver (B) leitet die Nutzerfrage aus dem Frontend an das Sprachmodell GPT-4 (C) weiter.
+
+Schema zur Softwarearchitektur einer einfachen RAG-Anwendung., 
+Schema zur Softwarearchitektur einer einfachen RAG-Anwendung.
+Ein weiterer Prozess stößt dort RAG an und ruft den passenden Kontext zum Beantworten der Frage aus einer Vektordatenbank (D) ab. Anschließend gelangt die Anfrage mit dem erweiterten Kontext über eine Python-API zu GPT-4. Das Sprachmodell generiert mithilfe des mitgelieferten Kontextes eine Antwort, die es dann über den Webserver an das Frontend liefert, wo Nutzer sie sehen können.
+
+Damit Daten zum LLM gelangen können, müssen sie zunächst in geeigneter Form auf dem lokalen Gerät vorliegen. Dieses Beispiel nutzt das Editorial der iX 2/2024, "Simulierte Souveränität" von Kornelius Kindermann, das als Textdatei vorliegt.
+
+Alternativ kann man beispielsweise auch einen Webcrawler verwenden, um gewünschte Inhalte von Webseiten aus dem Internet zu extrahieren und lokal abzuspeichern. Für den RAG-Prozess liegen die gewünschten Dokumentationsinhalte in einer Vektordatenbank, in diesem Fall kommt die Python-Bibliothek VectorDB zum Einsatz.
+
+Mehr von iX MagazinMehr von iX Magazin
+Dokumente zur Vektordatenbank hinzufügen
+Das Verwalten der Dokumente läuft über ein Objekt der Klasse Memory. Bei der Objekterstellung gibt man einen Dateipfad zur Persistenz der Daten (memory_file), die Aufteilungsstrategie (chunking_strategy) für die Segmentierung der Texte und das Einbettungsmodell (embeddings) mit. Die Effizienz der unterschiedlichen Aufteilungsstrategien und Einbettungsmodelle hängt von den Daten ab. Beim Auswählen der optimalen Parameter helfen nur ausführliche Tests. Im Beispiel teilt die chunking_strategy den verwendeten Artikel in Segmente auf, die jeweils 80 Wörter umfassen (window_size) und zusätzlich die letzten 20 Wörter des vorherigen Segments enthalten (overlapping).
+
+Listing 1: Dokumente verwalten und aufteilen
+
+from vectordb import Memory
+
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode':'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+memory.clear()
+path = "src/training-data/digitale_souv.txt"
+file = open(path, "r", encoding="utf-8")
+memory.save(texts=file.read(), memory_file="./memory.txt")
+memory.dump()
+Das Ziel ist, die Dokumente in möglichst kleine Segmente aufzuteilen, da sich diese am besten mit der Vektorrepräsentation der Nutzerfrage vergleichen lassen. Gleichzeitig soll jedes Element inhaltlich aussagekräftig bleiben und nicht nur drei bis vier Wörter inmitten eines Satzes enthalten. Zudem soll der Zusammenhang im Gesamtdokument erhalten bleiben. Als Einbettungsmodell kommt normal zum Einsatz, was im Fall von VectorDB dann BAAI/bge-small-en-v1.5 ist. Dies ist ein einfaches Modell mit einer guten Balance zwischen Performance und Qualität der Einbettungen. Wenige Zeilen Python-Code laden den Text des Artikels in das Programm, die Funktion memory.save übernimmt das Segmentieren, Einbetten und Speichern in der Vektordatenbank.
+
+Fragen mit RAG beantworten
+Mit der Python-Bibliothek Flask lässt sich ein einfacher Webserver aufsetzen, der initial lokal auf http://127.0.0.1:5000 läuft. Adresse und Port passt man nach seinen Wünschen beliebig an. Der Server enthält nur einen einzigen Endpunkt für HTTP-POST-Anfragen. Dort wird die Frage des Nutzers aus dem Rumpf der Anfrage extrahiert und mit dem Aufruf der Funktion ask_question_with_rag an den Chatbot gestellt. Die endgültig generierte Antwort kommt dann vom Webserver zurück an das Frontend, das sie verarbeitet und den Nutzern anzeigt.
+
+Listing 2: Erstellen des Flask-Webservers
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route("/", methods=["POST"])
+def ask_gpt():
+    question = request.json
+    gpt_response = chatbot.ask_question_with_rag(question)
+    print(gpt_response)
+    return gpt_response
+Zum Beantworten der Fragen kommt in diesem Beispiel GPT-4 zum Einsatz. Das Python-Paket openai stellt eine API zum Generieren von Antworten bereit. Um auf die API zuzugreifen, lädt das Programm zunächst den API-Schlüssel des eigenen OpenAI-Accounts aus den Umgebungsvariablen und speichert diesen im Objekt MY_ENV_VAR. Als Nächstes initialisiert ein Befehl ein OpenAI-Objekt (client), das die Anfragen an GPT-4 stellt. Anschließend lädt die bereits vorgestellte Klasse Memory die Inhalte der Dokumente aus der Vektordatenbank.
+
+Listing 3: Das OpenAI-Objekt erstellen und Inhalte aus der DB laden
+
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+from vectordb import Memory
+
+load_dotenv()
+MY_ENV_VAR = os.getenv('MY_ENV_VAR')
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode':'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+Der Webserver ruft die Funktion ask_question_with_rag zum Abschicken der Fragen beim Drücken der Entertaste auf. Dann durchsucht die Funktion find_relevant_articles die Vektordatenbank und gibt den passendsten Eintrag zurück. Anschließend übergibt die Funktion askgpt die Nutzerfrage und den Kontext aus dem RAG-Verfahren an GPT-4, das eine Antwort generiert. Die wird dann an den Webserver zurückgegeben und vom Frontend angezeigt.
+
+Listing 4: Funktionen zum Anstoßen des RAG-Prozesses und des Generierens der Antwort
+
+def askgpt(user_question, context):
+    msgs = []
+    msgs.append({"role": "system",
+                 "content": "Nutze den Kontext, um die Nutzerfrage zu beantworten:" + context})
+    msgs.append({"role": "user", "content": user_question})
+    return client.chat.completions.create(model="gpt-4", messages=msgs)
+
+def find_relevant_articles(question):
+    result = memory.search(question, top_n=1)
+    print(result)
+    return result
+
+def ask_question_with_rag(question):
+    rag_context = find_relevant_articles(question)
+    gpt_response = askgpt(user_question=question, context=rag_context[0]["chunk"])
+    answer = gpt_response.choices[0].message.content
+    return answer
+Das Frontend mit React erstellen
+Zum schnellen Entwickeln eines einfachen Frontends diente React: Das Frontend des RAG-Chatbots nutzt eine dynamische Single-Page-Webanwendung. In React bestehen Seiten aus JSX-Komponenten, die HTML, CSS und JS enthalten. Den Ausgangspunkt bildet die Funktionskomponente App. Die Funktion useState definiert am Anfang vom folgenden Listing den state der Komponente. Sie verwaltet die Nachricht, die aktuell im Eingabefeld steht, und stellt die bisherigen Chatnachrichten als Array dar. Bei Chatfunktionen hat es sich praktisch bewährt, dem Benutzer die bisherigen Fragen und Antworten über dem Eingabefeld anzuzeigen. In diesem Beispiel steuert die Komponente auch, ob das Textfeld aktuell für Nutzereingaben gesperrt ist und ob es eine Ladeanimation anzeigt.
+
+Listing 5: Ausgangspunkt der App
+
+function App() {
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [disableInput, setDisableInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputReference = useRef(null); // reference to chat input field to focus it after enable/disable
+Die Komponente gibt am Ende die React-JSX-Elemente zurück, aus denen sich die Webseite zusammensetzt. Sie besteht aus einem Chatfenster-Container, der für jede bisher gesendete Nachricht ein Chatnachricht-Element enthält. Die Funktion map wandelt die Nachrichten aus dem state zu Komponenten um. Zentral ist das kurze Formular mit einem Eingabefeld, in dem Nutzer ihre Fragen stellen. Sendet der Nutzer seine Frage ab, soll GPT-4 diese beantworten, was über die handleSubmit-Funktion geschieht.
+
+Listing 6: return-Funktion der RAG-App
+
+      <div className="chat">
+        {chatMessages.map((currentItem) => {
+          return (
+            <ChatMessage
+              logo={currentItem.logo}
+              username={currentItem.username}
+              message={currentItem.message}
+              url={currentItem.url}
+            />
+          );
+        })}
+        {isLoading ? <LoadingSpinner /> : null}
+        <div id="endofchat"></div>
+      </div>
+      <div className="mb-3">
+        <form action="" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            ref={inputReference}
+            onChange={handleChatInput}
+            className="form-control"
+            value={chatInput}
+            disabled={disableInput}
+            placeholder="Stelle eine Frage..."
+          />
+          <input type="submit" hidden />
+        </form>
+      </div>
+Bei einer Änderung des state deaktiviert handleSubmit das Eingabefeld und zeigt eine Ladeanimation an, während GPT-4 eine Antwort generiert. Anschließend wird die Nachricht des Nutzers dem chatMessages-Zustandsarray hinzugefügt und mittels fetch eine POST-Anfrage an den Webserverendpunkt geschickt, die die Eingabe der Nutzer im Rumpf der Anfrage enthält.
+
+Listing 7: Verhalten der App bei Anfragen konfigurieren
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setDisableInput(true); // Eingabefeld vorerst blockieren
+    setChatInput(""); // Eingabefeld leeren
+    // Nutzerfrage an die bisherigen Chatnachrichten anhängen
+    setChatMessages((chatMessages) => [
+      ...chatMessages,
+      { logo: user_logo, username: "Du", message: chatInput },
+    ]);
+    setIsLoading(true); // Ladeanimation anzeigen
+    fetch("http://127.0.0.1:5000/", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(chatInput),
+    })
+      .then((response) => response.text())
+      .then((response) => {
+        setIsLoading(false); // Ladeanimation entfernen
+        // GPT-4 Antwort an die bisherigen Nachrichten anhängen
+        setChatMessages((chatMessages) => [
+          ...chatMessages,
+          { logo: chatbot_logo, username: "Chatbot", message: response },
+        ]);
+        setDisableInput(false); // Eingabefeld reaktivieren
+      });
+  }
+Sobald der Webserver die von GPT-4 generierte Antwort an das Frontend zurückschickt, landet sie ebenfalls im chatMessages-Array. Eine Aktualisierung des state lädt alle Komponenten neu, wodurch die Nutzer zuerst die eigene Frage und dann die Antwort von GPT-4 als Nachrichten im Frontend sehen. Insgesamt ergibt sich aus diesen wichtigen Codeausschnitten und weiterem Code die in der folgenden Abbildung gezeigte Chatbot-Benutzeroberfläche.
+
+Ausschnitte aus dem Frontend mit zwei Beispielen für Nutzerfragen und die dafür generierten Antworten., 
+Ausschnitte aus dem Frontend mit zwei Beispielen für Nutzerfragen und die dafür generierten Antworten.
+Fazit
+Um einen einfachen Chatbot mit RAG umzusetzen, benötigt man neben dem Web-Frontend nur wenige Zeilen Code für die Vektordatenbank, die Sprachmodell-API und den Webserver.
+
+Um bei produktiven Anwendungen dieser Art den für die Nutzerfrage relevantesten Kontext zu liefern, müssen einige RAG-Parameter durch ausführliche Tests optimiert werden. Dazu zählen die Segmentgröße, das Overlapping, die Wahl des Einbettungsmodells und die Anzahl der zurückgelieferten Segmente. Daher bleibt einem eine umfangreichere Beschäftigung mit diesen Details von RAG nicht erspart. 
+
+2/2
+
+ChatGPT
+Der Artikel "Eigene Chatbots mit Retrieval Augmented Generation erstellen" beschreibt die Implementierung eines Chatbot-Prototyps, der auf interne Dokumente zugreift und diese nutzt, um Nutzerfragen zu beantworten. Der Prototyp wird in Python programmiert und verwendet ein Web-Frontend in React.
+
+Hauptpunkte des Artikels:
+Einleitung:
+Retrieval Augmented Generation (RAG): Eine Methode, um große Sprachmodelle mit zusätzlichen Inhalten aus Dokumenten zu unterstützen. Dies verbessert die Qualität der generierten Antworten und reduziert Halluzinationen.
+Vektordatenbank: Speichert die Dokumente in einer Form, die es dem Sprachmodell ermöglicht, relevante Informationen schnell abzurufen.
+Autoren:
+Ronny Frankenstein: Experte für IT-Sicherheit und Zertifizierungen bei HiSolutions AG.
+Kai Konitzer: Programmierer und Student der Medieninformatik.
+Architektur der Beispiel-App:
+Web-Frontend (A): Enthält ein Eingabefeld für Benutzerfragen und zeigt bisherige Nachrichten.
+Webserver (B): Leitet die Nutzerfrage an das Sprachmodell GPT-4 (C) weiter.
+Vektordatenbank (D): Speichert die Dokumente und liefert den Kontext für die Fragen.
+Prozess:
+Dokumente hinzufügen: Dokumente werden in Segmente aufgeteilt und in eine Vektordatenbank eingefügt.
+Fragen beantworten: Ein Webserver empfängt Nutzerfragen, ruft relevante Dokumentensegmente ab und leitet diese zusammen mit der Frage an GPT-4 weiter, das eine Antwort generiert.
+Python-Code:
+Memory-Klasse: Verwalten und Segmentieren der Dokumente.
+Flask-Webserver: Dient als Schnittstelle zwischen Frontend und Backend.
+OpenAI-API: Nutzt GPT-4 zur Generierung von Antworten.
+React-Frontend: Dynamische Single-Page-Webanwendung, die Nutzerfragen und Antworten anzeigt.
+Beispielcode:
+Dokumente verwalten: Aufteilung der Texte in kleine Segmente zur effizienten Verarbeitung.
+Fragen mit RAG beantworten: Einfache Implementierung eines Webservers mit Flask.
+Frontend: Verwaltung des Zustands und Anzeige der Nachrichten mit React.
+Fazit:
+Vorteile von RAG: Verbesserung der Antwortqualität ohne umfangreiches Training.
+Notwendigkeit von Tests: Um optimale Ergebnisse zu erzielen, müssen Parameter wie Segmentgröße und Einbettungsmodelle durch Tests optimiert werden.
+Insgesamt zeigt der Artikel, wie man mit wenigen Codezeilen und der richtigen Architektur einen effektiven KI-Chatbot erstellen kann, der interne Dokumente nutzt, um präzise Antworten zu generieren.
+
+Wie erstelle ich die Vektordatenbank, was brauche ich, wie lange wird das dauern?
+ChatGPT
+Um eine Vektordatenbank für einen KI-Chatbot zu erstellen, der Retrieval Augmented Generation (RAG) nutzt, benötigst du mehrere Komponenten und Schritte. Hier ist eine detaillierte Anleitung:
+
+Benötigte Komponenten:
+Python-Umgebung: Eine aktuelle Python-Installation und grundlegende Bibliotheken wie numpy, pandas und scikit-learn.
+Textdaten: Die Dokumente, die der Chatbot verwenden soll, müssen als Textdateien vorliegen.
+Vektordatenbank-Bibliothek: Eine geeignete Bibliothek wie vectordb oder faiss.
+Einbettungsmodell: Ein Modell zur Erstellung von Vektorrepräsentationen, z.B. sentence-transformers.
+Schritt-für-Schritt-Anleitung:
+1. Vorbereitung der Python-Umgebung:
+Stelle sicher, dass du eine Python-Umgebung hast und installiere die notwendigen Bibliotheken.
+
+bash
+Code kopieren
+pip install numpy pandas scikit-learn sentence-transformers flask
+2. Vorbereitung der Textdaten:
+Stelle sicher, dass deine Textdaten in einem geeigneten Format vorliegen (z.B. als .txt-Dateien).
+
+3. Installation und Import der Vektordatenbank-Bibliothek:
+Falls du vectordb oder eine ähnliche Bibliothek verwendest, installiere sie und importiere sie in deinem Skript.
+
+python
+Code kopieren
+from vectordb import Memory
+from sentence_transformers import SentenceTransformer
+4. Einrichten des Einbettungsmodells:
+Lade das Einbettungsmodell, das für die Erstellung der Vektoren verwendet wird.
+
+python
+Code kopieren
+model = SentenceTransformer('BAAI/bge-small-en-v1.5')
+5. Erstellen der Vektordatenbank:
+Schreibe ein Skript, um die Dokumente zu segmentieren und die Vektoren zu erstellen.
+
+python
+Code kopieren
+# Importiere notwendige Bibliotheken
+import os
+from vectordb import Memory
+
+# Erstelle die Memory-Instanz mit den gewünschten Einstellungen
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode':'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+
+# Lade und segmentiere die Dokumente
+path = "path/to/your/documents"
+documents = [os.path.join(path, f) for f in os.listdir(path) if f.endswith('.txt')]
+
+for doc in documents:
+    with open(doc, "r", encoding="utf-8") as file:
+        text = file.read()
+        memory.save(texts=text, memory_file="./memory.txt")
+
+# Speichere die Vektordatenbank
+memory.dump()
+6. Laden der Vektordatenbank und Verwendung im RAG-Prozess:
+Im Hauptskript des Chatbots lädst du die Vektordatenbank und verwendest sie zur Beantwortung der Nutzerfragen.
+
+python
+Code kopieren
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+from vectordb import Memory
+
+# Lade Umgebungsvariablen und initialisiere OpenAI
+load_dotenv()
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Lade die Vektordatenbank
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode':'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+
+# Funktion zur Beantwortung der Fragen
+def askgpt(user_question, context):
+    msgs = [
+        {"role": "system", "content": "Nutze den Kontext, um die Nutzerfrage zu beantworten:" + context},
+        {"role": "user", "content": user_question}
+    ]
+    return client.chat.completions.create(model="gpt-4", messages=msgs)
+
+def find_relevant_articles(question):
+    result = memory.search(question, top_n=1)
+    return result
+
+def ask_question_with_rag(question):
+    rag_context = find_relevant_articles(question)
+    gpt_response = askgpt(user_question=question, context=rag_context[0]["chunk"])
+    return gpt_response.choices[0].message.content
+Dauer der Erstellung:
+Die Dauer hängt von mehreren Faktoren ab:
+
+Größe und Anzahl der Dokumente: Je mehr Dokumente, desto länger dauert die Segmentierung und Einbettung.
+Leistung des Computers: Ein leistungsfähiger Computer mit genügend RAM und einem schnellen Prozessor beschleunigt den Prozess erheblich.
+Einbettungsmodell: Ein komplexeres Modell benötigt mehr Zeit zum Berechnen der Vektoren.
+Für eine kleine Sammlung von Dokumenten (einige Dutzend bis hundert Seiten) auf einem durchschnittlichen modernen Computer sollte der Prozess wenige Minuten bis eine Stunde dauern. Größere Datenmengen oder komplexere Einbettungsmodelle können entsprechend länger brauchen.
+
+Zusammenfassung:
+Die Erstellung einer Vektordatenbank für RAG erfordert das Einrichten einer Python-Umgebung, das Segmentieren der Dokumente und das Erstellen von Vektorrepräsentationen mit einem Einbettungsmodell. Mit den richtigen Werkzeugen und einer gut strukturierten Datenvorbereitung kann der Prozess relativ schnell und effizient durchgeführt werden.
+
+Wie wird es in dem Artikel umgesetzt?
+ChatGPT
+Der Artikel beschreibt die Erstellung einer Vektordatenbank und die Integration in einen Chatbot-Prototypen unter Verwendung der Python-Bibliothek vectordb. Hier sind die wesentlichen Schritte, wie sie im Artikel beschrieben werden:
+
+1. Vorbereitung der Python-Umgebung
+Installiere notwendige Bibliotheken:
+bash
+Code kopieren
+pip install vectordb flask openai
+2. Segmentierung und Einbettung der Dokumente
+Dokumente werden in Segmente aufgeteilt, die in einer Vektordatenbank gespeichert werden. Dies geschieht mit der Memory-Klasse aus der vectordb-Bibliothek.
+Beispielcode zur Verwaltung und Segmentierung der Dokumente:
+python
+Code kopieren
+from vectordb import Memory
+
+# Erstelle ein Memory-Objekt mit spezifischen Einstellungen
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode': 'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+
+# Lade und speichere die Dokumente
+path = "src/training-data/digitale_souv.txt"
+file = open(path, "r", encoding="utf-8")
+memory.save(texts=file.read(), memory_file="./memory.txt")
+memory.dump()
+3. Flask-Webserver zur Beantwortung von Fragen
+Ein einfacher Flask-Webserver empfängt Nutzerfragen, ruft relevante Dokumentensegmente ab und leitet diese an GPT-4 weiter.
+Beispielcode für den Flask-Webserver:
+python
+Code kopieren
+from flask import Flask, request
+from flask_cors import CORS
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+from vectordb import Memory
+
+app = Flask(__name__)
+CORS(app)
+
+# Lade Umgebungsvariablen und initialisiere OpenAI
+load_dotenv()
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Lade die Vektordatenbank
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode': 'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+
+# Funktion zur Beantwortung der Fragen
+def askgpt(user_question, context):
+    msgs = [
+        {"role": "system", "content": "Nutze den Kontext, um die Nutzerfrage zu beantworten:" + context},
+        {"role": "user", "content": user_question}
+    ]
+    return client.chat.completions.create(model="gpt-4", messages=msgs)
+
+def find_relevant_articles(question):
+    result = memory.search(question, top_n=1)
+    return result
+
+def ask_question_with_rag(question):
+    rag_context = find_relevant_articles(question)
+    gpt_response = askgpt(user_question=question, context=rag_context[0]["chunk"])
+    return gpt_response.choices[0].message.content
+
+@app.route("/", methods=["POST"])
+def ask_gpt():
+    question = request.json
+    gpt_response = ask_question_with_rag(question)
+    return gpt_response
+
+if __name__ == "__main__":
+    app.run(debug=True)
+4. Frontend mit React
+Ein einfaches React-Frontend ermöglicht es Nutzern, Fragen zu stellen und Antworten anzuzeigen.
+Beispielcode für das React-Frontend:
+javascript
+Code kopieren
+import React, { useState, useRef } from 'react';
+
+function App() {
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [disableInput, setDisableInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputReference = useRef(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setDisableInput(true);
+    setChatInput("");
+    setChatMessages([...chatMessages, { username: "Du", message: chatInput }]);
+    setIsLoading(true);
+
+    fetch("http://127.0.0.1:5000/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ question: chatInput })
+    })
+    .then(response => response.text())
+    .then(response => {
+      setIsLoading(false);
+      setChatMessages([...chatMessages, { username: "Chatbot", message: response }]);
+      setDisableInput(false);
+    });
+  };
+
+  return (
+    <div className="App">
+      <div className="chat">
+        {chatMessages.map((msg, index) => (
+          <div key={index}>
+            <strong>{msg.username}: </strong> {msg.message}
+          </div>
+        ))}
+        {isLoading && <div>Loading...</div>}
+      </div>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          disabled={disableInput}
+          placeholder="Stelle eine Frage..."
+        />
+        <button type="submit" disabled={disableInput}>Senden</button>
+      </form>
+    </div>
+  );
+}
+
+export default App;
+Zusammenfassung:
+Dokumentensegmentierung und Einbettung: Segmentiere deine Dokumente und erstelle Vektoren mit der Memory-Klasse.
+Flask-Webserver: Richte einen Webserver ein, der Nutzerfragen entgegennimmt, relevante Dokumentensegmente abruft und GPT-4 zur Beantwortung nutzt.
+React-Frontend: Erstelle eine Benutzeroberfläche, die es Nutzern ermöglicht, Fragen zu stellen und Antworten anzuzeigen.
+Die Dauer der Erstellung hängt von der Größe der Dokumente und der Leistung des Computers ab, sollte aber für eine kleine bis mittelgroße Dokumentensammlung und einen einfachen Prototypen einige Stunden bis einen Tag dauern.
+
+Lass uns das Umsetzen:
+Ein Prototyp mit Python samt einer Web-App in React. Der Prototyp beantwortet Fragen zu internen Dokumenten, den passenden Kontext dafür liefert das Sprachmodell GPT-4 in Kombination mit Retrieval Augmented Generation (RAG).
+Lies den Artikel genau durch, und nutze ihn dafür. führe mich durch den Prozess.
+Ich nutze Windows mit Visual Code und Python und Flask als Webserver und will hier zum ersten mal vectorDB benutzen.
+Zur Versionierung möchte ich GIT nutzen. Das ist bereits eingerichtet, auch die Verbindung mit GitHub.
+Mein Ordner lautet rag_chatbot
+
+4/4
+
+ChatGPT
+Super, ich werde dich durch den gesamten Prozess führen, um einen Prototyp mit Python, Flask und einer Web-App in React zu erstellen. Wir werden dabei die im Artikel beschriebenen Schritte genau befolgen.
+
+Schritt 1: Einrichtung des Projekts
+1.1 Erstelle die Verzeichnisstruktur
+Zunächst erstellen wir die Verzeichnisstruktur für das Projekt:
+
+kotlin
+Code kopieren
+rag_chatbot/
+├── backend/
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── .env
+│   └── src/
+│       └── training-data/
+│           └── digitale_souv.txt
+└── frontend/
+    ├── package.json
+    ├── public/
+    └── src/
+        ├── App.js
+        ├── index.js
+        └── components/
+            └── ChatMessage.js
+1.2 Initialisiere ein Git-Repository
+Wechsle in das rag_chatbot-Verzeichnis und initialisiere ein Git-Repository:
+
+bash
+Code kopieren
+cd rag_chatbot
+git init
+Schritt 2: Backend mit Python und Flask
+2.1 Einrichtung des Python-Backends
+Wechsle in das backend-Verzeichnis und erstelle eine virtuelle Umgebung:
+
+bash
+Code kopieren
+cd backend
+python -m venv venv
+source venv/Scripts/activate  # Auf Windows
+Erstelle die requirements.txt und füge die notwendigen Bibliotheken hinzu:
+
+plaintext
+Code kopieren
+flask
+flask-cors
+openai
+vectordb
+python-dotenv
+Installiere die Abhängigkeiten:
+
+bash
+Code kopieren
+pip install -r requirements.txt
+2.2 Konfiguration der Umgebungsvariablen
+Erstelle eine .env-Datei und füge deinen OpenAI API-Schlüssel hinzu:
+
+plaintext
+Code kopieren
+OPENAI_API_KEY=dein-openai-api-schluessel
+2.3 Erstelle das Flask-Backend
+Erstelle die app.py-Datei mit folgendem Inhalt:
+
+python
+Code kopieren
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+from vectordb import Memory
+
+app = Flask(__name__)
+CORS(app)
+
+# Lade Umgebungsvariablen und initialisiere OpenAI
+load_dotenv()
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Lade die Vektordatenbank
+memory = Memory(memory_file="./memory.txt",
+                chunking_strategy={'mode': 'sliding_window', 'window_size': 80, 'overlap': 20},
+                embeddings="normal")
+
+# Funktion zur Beantwortung der Fragen
+def askgpt(user_question, context):
+    msgs = [
+        {"role": "system", "content": "Nutze den Kontext, um die Nutzerfrage zu beantworten:" + context},
+        {"role": "user", "content": user_question}
+    ]
+    return client.chat.completions.create(model="gpt-4", messages=msgs)
+
+def find_relevant_articles(question):
+    result = memory.search(question, top_n=1)
+    return result
+
+def ask_question_with_rag(question):
+    rag_context = find_relevant_articles(question)
+    gpt_response = askgpt(user_question=question, context=rag_context[0]["chunk"])
+    return gpt_response.choices[0].message.content
+
+@app.route("/", methods=["POST"])
+def ask_gpt():
+    data = request.json
+    question = data.get('question', '')
+    gpt_response = ask_question_with_rag(question)
+    return jsonify(gpt_response)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+2.4 Dokumente vorbereiten
+Platziere die Textdatei digitale_souv.txt im src/training-data Verzeichnis. Diese Datei enthält die Texte, die der Chatbot verwenden soll.
+
+Schritt 3: Frontend mit React
+3.1 Einrichtung des React-Frontends
+Wechsle in das frontend-Verzeichnis und initialisiere ein neues React-Projekt:
+
+bash
+Code kopieren
+cd ../frontend
+npx create-react-app .
+3.2 Installation von Abhängigkeiten
+Füge react-bootstrap hinzu, um das Frontend zu gestalten:
+
+bash
+Code kopieren
+npm install react-bootstrap bootstrap
+3.3 Erstelle die App-Komponente
+Bearbeite die src/App.js-Datei wie folgt:
+
+javascript
+Code kopieren
+import React, { useState, useRef } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+function App() {
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [disableInput, setDisableInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputReference = useRef(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setDisableInput(true);
+    setChatInput("");
+    setChatMessages([...chatMessages, { username: "Du", message: chatInput }]);
+    setIsLoading(true);
+
+    fetch("http://127.0.0.1:5000/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ question: chatInput })
+    })
+    .then(response => response.json())
+    .then(response => {
+      setIsLoading(false);
+      setChatMessages([...chatMessages, { username: "Chatbot", message: response }]);
+      setDisableInput(false);
+    });
+  };
+
+  return (
+    <div className="App container mt-5">
+      <div className="chat">
+        {chatMessages.map((msg, index) => (
+          <div key={index} className="mb-3">
+            <strong>{msg.username}: </strong> {msg.message}
+          </div>
+        ))}
+        {isLoading && <div>Loading...</div>}
+      </div>
+      <form onSubmit={handleSubmit} className="mt-4">
+        <div className="input-group">
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            disabled={disableInput}
+            placeholder="Stelle eine Frage..."
+            className="form-control"
+          />
+          <button type="submit" className="btn btn-primary" disabled={disableInput}>Senden</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default App;
+3.4 Erstelle die ChatMessage-Komponente
+Erstelle eine ChatMessage.js-Datei im src/components-Verzeichnis:
+
+javascript
+Code kopieren
+import React from 'react';
+
+function ChatMessage({ username, message }) {
+  return (
+    <div className="chat-message">
+      <strong>{username}: </strong> {message}
+    </div>
+  );
+}
+
+export default ChatMessage;
+3.5 Start des React-Frontends
+Starte das React-Frontend:
+
+bash
+Code kopieren
+npm start
+Schritt 4: Versionierung mit Git
+Füge alle Dateien zum Git-Repository hinzu und mache den ersten Commit:
+
+bash
+Code kopieren
+cd ..
+git add .
+git commit -m "Initial commit for RAG Chatbot project"
+git push origin main
+Zusammenfassung
+Nun hast du einen funktionalen Prototypen erstellt, der:
+
+Ein Python-Backend mit Flask verwendet, um Nutzerfragen zu empfangen und relevante Dokumentensegmente mithilfe von RAG und GPT-4 zu beantworten.
+Ein React-Frontend, das es Nutzern ermöglicht, Fragen zu stellen und Antworten anzuzeigen.
+Stelle sicher, dass der Flask-Server und das React-Frontend laufen, um die volle Funktionalität deines Chatbots zu testen.
+
+
+
+
+
+
+Ist dieses Gespräch bislang hilfreich?
+
+
+
+
+
+Sende eine Nachricht an ChatGPT
+
+ChatGPT kann Fehler machen. Überprüfe wichtige Informationen.
+?
+ChatGPT
